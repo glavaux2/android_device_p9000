@@ -124,11 +124,11 @@ public class KeyHandler implements DeviceKeyHandler {
 		im.injectInputEvent(upEvent, InputManager.INJECT_INPUT_EVENT_MODE_ASYNC);
     }
     
-    public boolean handleKeyEvent(KeyEvent event) {
-		int scanCode = event.getScanCode();
-		boolean down = event.getAction() == KeyEvent.ACTION_DOWN;
-		TelecomManager telecomManager = (TelecomManager) handlerContext.getSystemService(Context.TELECOM_SERVICE);
-		if (telecomManager != null && telecomManager.isRinging()) {
+    public KeyEvent handleKeyEvent(KeyEvent event) {
+	int scanCode = event.getScanCode();
+	boolean down = event.getAction() == KeyEvent.ACTION_DOWN;
+	TelecomManager telecomManager = (TelecomManager) handlerContext.getSystemService(Context.TELECOM_SERVICE);
+	if (telecomManager != null && telecomManager.isRinging()) {
 			homeConsumed = false;
 			homePressed = false;
 			homeDoubleTapPending = false;
@@ -137,18 +137,18 @@ public class KeyHandler implements DeviceKeyHandler {
 			hHandler.removeCallbacks(homeLongPressTimeoutRunnable);
 			hHandler.removeCallbacks(homeDoubleTapTimeoutRunnable);
 			hHandler.removeCallbacks(additionalLongPressTimeoutRunnable);
-			return true;
+			return null;
         }
         if (scanCode == 250) {
-			if(down){
-				additioanalPressed = true;
-				hHandler.postDelayed(additionalLongPressTimeoutRunnable, 300);
+	    if(down){
+		additioanalPressed = true;
+		hHandler.postDelayed(additionalLongPressTimeoutRunnable, 300);
             }
             if (!down){
-				additioanalPressed = false;
-				if (additioanalConsumed){
-					additioanalConsumed = false;
-					return true;
+		additioanalPressed = false;
+		if (additioanalConsumed){
+			additioanalConsumed = false;
+			return null;
                 }
                 hHandler.removeCallbacks(additionalLongPressTimeoutRunnable);
                 PackageManager pm = handlerContext.getPackageManager();
@@ -158,36 +158,36 @@ public class KeyHandler implements DeviceKeyHandler {
 					handlerContext.startActivity(startPackage);
                 }
             }
-            return true;
+            return null;
         }
         if (scanCode == 102) {
-			if (down){
-				doHapticFeedback(shortPressVibePattern);
-				homePressed = true;
-				if (homeConsumed == false && homeDoubleTapPending == false) {
-					hHandler.postDelayed(homeLongPressTimeoutRunnable, 300);
+	    if (down){
+		doHapticFeedback(shortPressVibePattern);
+		homePressed = true;
+		if (homeConsumed == false && homeDoubleTapPending == false) {
+			hHandler.postDelayed(homeLongPressTimeoutRunnable, 300);
                 }
             }
             if (!down) {
-				homePressed = false;
-				hHandler.removeCallbacks(homeLongPressTimeoutRunnable);
-				if (homeConsumed) {
-					homeConsumed = false;
-					return true;
+		homePressed = false;
+		hHandler.removeCallbacks(homeLongPressTimeoutRunnable);
+	        if (homeConsumed) {
+			homeConsumed = false;
+			return null;
                 }
                 homeDoubleTapPending = true;
                 hHandler.postDelayed(homeDoubleTapTimeoutRunnable, 300);
-                return true;
+                return null;
             }
             if (homeDoubleTapPending) {
-				homeDoubleTapPending = false;
-				homeConsumed = true;
-				hHandler.removeCallbacks(homeDoubleTapTimeoutRunnable);
-				handlerTriggerVirtualKeypress(KeyEvent.KEYCODE_HOME);
+		homeDoubleTapPending = false;
+		homeConsumed = true;
+		hHandler.removeCallbacks(homeDoubleTapTimeoutRunnable);
+		handlerTriggerVirtualKeypress(KeyEvent.KEYCODE_HOME);
             }
-            return true;
+            return null;
         }
-        return false;
+        return event;
     }
          
     static long[] getLongIntArray(Resources r, int resid) {
